@@ -1,2 +1,7 @@
 # go-imap-move
-MOVE Extension for go-imap
+
+[MOVE extension](https://tools.ietf.org/html/rfc6851) for [go-imap](https://github.com/emersion/go-imap).
+
+## License
+
+MIT
