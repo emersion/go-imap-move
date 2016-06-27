@@ -20,7 +20,7 @@ type Mailbox interface {
 }
 
 type Handler struct {
-	Move
+	Command
 }
 
 func (h *Handler) handle(uid bool, conn *server.Conn) error {

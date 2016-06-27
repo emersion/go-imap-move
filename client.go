@@ -29,7 +29,7 @@ func (c *Client) move(uid bool, seqset *common.SeqSet, dest string) (err error) 
 	}
 
 	var cmd common.Commander
-	cmd = &Move{
+	cmd = &Command{
 		SeqSet: seqset,
 		Mailbox: dest,
 	}

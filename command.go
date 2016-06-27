@@ -9,12 +9,12 @@ import (
 
 // A MOVE command.
 // See RFC 6851 section 3.1.
-type Move struct {
+type Command struct {
 	SeqSet *imap.SeqSet
 	Mailbox string
 }
 
-func (cmd *Move) Command() *imap.Command {
+func (cmd *Command) Command() *imap.Command {
 	mailbox, _ := utf7.Encoder.String(cmd.Mailbox)
 
 	return &imap.Command{
@@ -23,7 +23,7 @@ func (cmd *Move) Command() *imap.Command {
 	}
 }
 
-func (cmd *Move) Parse(fields []interface{}) (err error) {
+func (cmd *Command) Parse(fields []interface{}) (err error) {
 	if len(fields) < 2 {
 		return errors.New("No enough arguments")
 	}
