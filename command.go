@@ -3,7 +3,7 @@ package move
 import (
 	"errors"
 
-	imap "github.com/emersion/go-imap/common"
+	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/utf7"
 )
 
@@ -18,7 +18,7 @@ func (cmd *Command) Command() *imap.Command {
 	mailbox, _ := utf7.Encoder.String(cmd.Mailbox)
 
 	return &imap.Command{
-		Name: CommandName,
+		Name: commandName,
 		Arguments: []interface{}{cmd.SeqSet, mailbox},
 	}
 }

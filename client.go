@@ -3,7 +3,7 @@ package move
 import (
 	"errors"
 
-	"github.com/emersion/go-imap/common"
+	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/commands"
 	"github.com/emersion/go-imap/client"
 )
@@ -19,16 +19,16 @@ func NewClient(c *client.Client) *Client {
 
 // Check if the server supports the MOVE extension.
 func (c *Client) SupportsMove() bool {
-	return c.client.Caps[CommandName]
+	return c.client.Caps[Capability]
 }
 
-func (c *Client) move(uid bool, seqset *common.SeqSet, dest string) (err error) {
-	if c.client.State != common.SelectedState {
+func (c *Client) move(uid bool, seqset *imap.SeqSet, dest string) (err error) {
+	if c.client.State != imap.SelectedState {
 		err = errors.New("No mailbox selected")
 		return
 	}
 
-	var cmd common.Commander
+	var cmd imap.Commander
 	cmd = &Command{
 		SeqSet: seqset,
 		Mailbox: dest,
@@ -48,12 +48,12 @@ func (c *Client) move(uid bool, seqset *common.SeqSet, dest string) (err error) 
 
 // Moves the specified message(s) to the end of the specified destination
 // mailbox.
-func (c *Client) Move(seqset *common.SeqSet, dest string) (err error) {
+func (c *Client) Move(seqset *imap.SeqSet, dest string) (err error) {
 	return c.move(false, seqset, dest)
 }
 
 // Identical to Move, but seqset is interpreted as containing unique
 // identifiers instead of message sequence numbers.
-func (c *Client) UidMove(seqset *common.SeqSet, dest string) (err error) {
+func (c *Client) UidMove(seqset *imap.SeqSet, dest string) (err error) {
 	return c.move(true, seqset, dest)
 }

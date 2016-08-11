@@ -3,7 +3,7 @@ package move
 import (
 	"errors"
 
-	"github.com/emersion/go-imap/common"
+	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/server"
 )
 
@@ -16,37 +16,52 @@ type Mailbox interface {
 	//
 	// If the destination mailbox does not exist, a server SHOULD return an error.
 	// It SHOULD NOT automatically create the mailbox.
-	MoveMessages(uid bool, seqset *common.SeqSet, dest string) error
+	MoveMessages(uid bool, seqset *imap.SeqSet, dest string) error
 }
 
-type Handler struct {
+type handler struct {
 	Command
 }
 
-func (h *Handler) handle(uid bool, conn *server.Conn) error {
-	if conn.Mailbox == nil {
+func (h *handler) handle(uid bool, conn server.Conn) error {
+	mailbox := conn.Context().Mailbox
+	if mailbox == nil {
 		return server.ErrNoMailboxSelected
 	}
 
-	if m, ok := conn.Mailbox.(Mailbox); ok {
+	if m, ok := mailbox.(Mailbox); ok {
 		return m.MoveMessages(uid, h.SeqSet, h.Mailbox)
 	}
 	return errors.New("MOVE extension not supported")
 }
 
-func (h *Handler) Handle(conn *server.Conn) error {
+func (h *handler) Handle(conn server.Conn) error {
 	return h.handle(false, conn)
 }
 
-func (h *Handler) UidHandle(conn *server.Conn) error {
+func (h *handler) UidHandle(conn server.Conn) error {
 	return h.handle(true, conn)
 }
 
-// Enable the MOVE extension for a server.
-func NewServer(s *server.Server) {
-	s.RegisterCapability(CommandName, common.SelectedState)
+type extension struct {}
 
-	s.RegisterCommand(CommandName, func() server.Handler {
-		return &Handler{}
-	})
+func (ext *extension) Capabilities(state imap.ConnState) (caps []string) {
+	if state & imap.SelectedState != 0 {
+		caps = append(caps, Capability)
+	}
+	return
+}
+
+func (ext *extension) Command(name string) server.HandlerFactory {
+	if name != commandName {
+		return nil
+	}
+
+	return func() server.Handler {
+		return &handler{}
+	}
+}
+
+func NewExtension() server.Extension {
+	return &extension{}
 }
