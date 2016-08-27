@@ -10,7 +10,7 @@ import (
 // A MOVE command.
 // See RFC 6851 section 3.1.
 type Command struct {
-	SeqSet *imap.SeqSet
+	SeqSet  *imap.SeqSet
 	Mailbox string
 }
 
@@ -18,7 +18,7 @@ func (cmd *Command) Command() *imap.Command {
 	mailbox, _ := utf7.Encoder.String(cmd.Mailbox)
 
 	return &imap.Command{
-		Name: commandName,
+		Name:      commandName,
 		Arguments: []interface{}{cmd.SeqSet, mailbox},
 	}
 }

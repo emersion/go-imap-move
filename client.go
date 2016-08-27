@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/emersion/go-imap"
-	"github.com/emersion/go-imap/commands"
 	"github.com/emersion/go-imap/client"
+	"github.com/emersion/go-imap/commands"
 )
 
 type Client struct {
@@ -30,7 +30,7 @@ func (c *Client) move(uid bool, seqset *imap.SeqSet, dest string) (err error) {
 
 	var cmd imap.Commander
 	cmd = &Command{
-		SeqSet: seqset,
+		SeqSet:  seqset,
 		Mailbox: dest,
 	}
 	if uid {
