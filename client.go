@@ -1,35 +1,32 @@
 package move
 
 import (
-	"errors"
-
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
 	"github.com/emersion/go-imap/commands"
 )
 
+// Client is a MOVE client.
 type Client struct {
-	client *client.Client
+	c *client.Client
 }
 
-// Create a new client.
+// NewClient creates a new client.
 func NewClient(c *client.Client) *Client {
-	return &Client{client: c}
+	return &Client{c: c}
 }
 
-// Check if the server supports the MOVE extension.
-func (c *Client) SupportsMove() bool {
-	return c.client.Caps[Capability]
+// SupportMove checks if the server supports the MOVE extension.
+func (c *Client) SupportMove() (bool, error) {
+	return c.c.Support(Capability)
 }
 
-func (c *Client) move(uid bool, seqset *imap.SeqSet, dest string) (err error) {
-	if c.client.State != imap.SelectedState {
-		err = errors.New("No mailbox selected")
-		return
+func (c *Client) move(uid bool, seqset *imap.SeqSet, dest string) error {
+	if c.c.State != imap.SelectedState {
+		return client.ErrNoMailboxSelected
 	}
 
-	var cmd imap.Commander
-	cmd = &Command{
+	var cmd imap.Commander = &Command{
 		SeqSet:  seqset,
 		Mailbox: dest,
 	}
@@ -37,23 +34,21 @@ func (c *Client) move(uid bool, seqset *imap.SeqSet, dest string) (err error) {
 		cmd = &commands.Uid{Cmd: cmd}
 	}
 
-	status, err := c.client.Execute(cmd, nil)
-	if err != nil {
-		return
+	if status, err := c.c.Execute(cmd, nil); err != nil {
+		return err
+	} else {
+		return status.Err()
 	}
-
-	err = status.Err()
-	return
 }
 
-// Moves the specified message(s) to the end of the specified destination
+// Move moves the specified message(s) to the end of the specified destination
 // mailbox.
-func (c *Client) Move(seqset *imap.SeqSet, dest string) (err error) {
+func (c *Client) Move(seqset *imap.SeqSet, dest string) error {
 	return c.move(false, seqset, dest)
 }
 
-// Identical to Move, but seqset is interpreted as containing unique
+// UidMove is identical to Move, but seqset is interpreted as containing unique
 // identifiers instead of message sequence numbers.
-func (c *Client) UidMove(seqset *imap.SeqSet, dest string) (err error) {
+func (c *Client) UidMove(seqset *imap.SeqSet, dest string) error {
 	return c.move(true, seqset, dest)
 }
