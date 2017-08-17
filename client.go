@@ -22,7 +22,7 @@ func (c *Client) SupportMove() (bool, error) {
 }
 
 func (c *Client) move(uid bool, seqset *imap.SeqSet, dest string) error {
-	if c.c.State != imap.SelectedState {
+	if c.c.State() != imap.SelectedState {
 		return client.ErrNoMailboxSelected
 	}
 
