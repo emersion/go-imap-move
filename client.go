@@ -88,7 +88,7 @@ func (c *Client) UidMove(seqset *imap.SeqSet, dest string) error {
 }
 
 // MoveWithFallback tries to move if the server supports it. If it doesn't, it
-// falls back to copy, store and expunge, as defined in section 3.3 of RFC6851.
+// falls back to copy, store and expunge, as defined in RFC 6851 section 3.3.
 func (c *Client) MoveWithFallback(seqset *imap.SeqSet, dest string) error {
 	return c.moveWithFallback(false, seqset, dest)
 }
