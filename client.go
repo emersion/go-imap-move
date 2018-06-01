@@ -41,6 +41,40 @@ func (c *Client) move(uid bool, seqset *imap.SeqSet, dest string) error {
 	}
 }
 
+func (c *Client) moveWithFallback(uid bool, seqset *imap.SeqSet, dest string) error {
+	if ok, err := c.SupportMove(); err != nil {
+		return err
+	} else if ok {
+		return c.move(uid, seqset, dest)
+	}
+
+	if c.c.State() != imap.SelectedState {
+		return client.ErrNoMailboxSelected
+	}
+
+	item := imap.FormatFlagsOp(imap.AddFlags, true)
+	flags := []interface{}{imap.DeletedFlag}
+	if uid {
+		if err := c.c.UidCopy(seqset, dest); err != nil {
+			return err
+		}
+
+		if err := c.c.UidStore(seqset, item, flags, nil); err != nil {
+			return err
+		}
+	} else {
+		if err := c.c.Copy(seqset, dest); err != nil {
+			return err
+		}
+
+		if err := c.c.Store(seqset, item, flags, nil); err != nil {
+			return err
+		}
+	}
+
+	return c.c.Expunge(nil)
+}
+
 // Move moves the specified message(s) to the end of the specified destination
 // mailbox.
 func (c *Client) Move(seqset *imap.SeqSet, dest string) error {
@@ -51,4 +85,17 @@ func (c *Client) Move(seqset *imap.SeqSet, dest string) error {
 // identifiers instead of message sequence numbers.
 func (c *Client) UidMove(seqset *imap.SeqSet, dest string) error {
 	return c.move(true, seqset, dest)
+}
+
+// MoveWithFallback tries to move if the server supports it. If it doesn't, it
+// falls back to copy, store and expunge, as defined in section 3.3 of RFC6851.
+func (c *Client) MoveWithFallback(seqset *imap.SeqSet, dest string) error {
+	return c.moveWithFallback(false, seqset, dest)
+}
+
+// UidMoveWithFallback is identical to MoveWithFallback, but seqset is
+// interpreted as containing unique identifiers instead of message sequence
+// numbers.
+func (c *Client) UidMoveWithFallback(seqset *imap.SeqSet, dest string) error {
+	return c.moveWithFallback(true, seqset, dest)
 }
