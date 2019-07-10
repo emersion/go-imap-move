@@ -99,3 +99,6 @@ func (c *Client) MoveWithFallback(seqset *imap.SeqSet, dest string) error {
 func (c *Client) UidMoveWithFallback(seqset *imap.SeqSet, dest string) error {
 	return c.moveWithFallback(true, seqset, dest)
 }
+
+// MoveClient is an alias used to compose multiple client extensions.
+type MoveClient = Client
